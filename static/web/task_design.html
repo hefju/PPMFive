@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html ng-app="myapp">
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="comp/bootstrap.min.css">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="comp/TodoList.css">
+    <script src="comp/angular.min.js"></script>
+    <title></title>
+    <style>
+        .done{text-decoration: line-through;color: #9932cc;   }
+    </style>
+</head>
+<body ng-controller="MainCtrl">
+<!--<div class="jumbotron">-->
+    <!--<button class="btn btn-primary  pull-right"><i class="fa fa-plus"></i> add task</button>-->
+    <!--&lt;!&ndash;<button class="btn btn-primary  pull-right"><i class="fa fa-spinner fa-spin"></i></i> reload</button>&ndash;&gt;-->
+    <!--<h2>我的任务列表 </h2>-->
+<!--</div>-->
+<nav class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">目 标 是 提 高 生 产 力</a>
+    </div>
+</nav>
+
+    <div class="container-fluid">
+        <div class="row"><!--主体部分-->
+            <div class="col-sm-1">  </div>
+            <div class="col-sm-7">
+
+
+
+
+
+                <section id="lists" >
+                    <article class="todoList">
+                        <header>
+                            <form data-bind="validate: true">
+                                <input class="required" value="Tasks {{dateNow | date:'yyyy.MM.dd'}}" />
+                            </form>
+                        </header>
+
+                        <a href="#" class="deletelist" data-bind="click: $parent.deleteTodoList">X</a>
+
+                        <ol>
+                            <li ng-repeat="b in books">
+                                <input type="checkbox"  ng-change="selectBook({{$index}})" ng-model="b.done" style="width:1em;height:1em;" />
+
+
+                                <input class="todoItemInput" type="text" ng-readonly="{{b.done}}"  ng-class="{'done':b.done}" ng-keypress="update($event,$index)" ng-model="b.title"  />
+
+
+                                <a href="" ng-click="remove($index)">X</a>
+                                <p class="error" data-bind="visible: errorMessage, text: errorMessage"></p>
+                            </li>
+                        </ol>
+
+                        <form ng-submit="addBook()">
+                            <input class="addTodo" type="text" ng-model="txtTitle"  placeholder="Type  here to add" />
+                        </form>
+
+                        <p class="error" data-bind="visible: errorMessage, text: errorMessage"></p>
+                    </article>
+                </section>
+
+
+            </div>
+            <div class="col-sm-4">{{books}}</div>
+
+    </div>
+    </div>
+<script src="comp/angular-resource.min.js"></script>
+<script>
+    var myapp=new angular.module("myapp",["ngResource"]);
+    myapp.controller("MainCtrl",["$scope","$resource",function($scope,$resource){
+        var Book=$resource("/books/:id",{id:'@id'},{});
+
+        $scope.list=function(idx){
+            Book.query(function(data){
+                $scope.books=data;
+            },function(error){
+                alert(error.data);
+            });
+        };
+
+        $scope.list();
+
+        //新增任务
+        $scope.addBook=function(){
+            var newbook=new Book();
+            newbook.title=$scope.txtTitle;
+            newbook.$save();
+            $scope.list();
+
+            $scope.txtTitle="";
+        };
+
+        $scope.dateNow= Date.now();
+
+        //编辑任务
+        $scope.update=function(keyEvent,idx){
+            if (keyEvent.which === 13) {
+                var book = $scope.books[idx];
+                book.$save();
+                $scope.list(idx);
+            }
+        };
+
+        //打勾任务
+        $scope.selectBook=function(idx){
+            var book=$scope.books[idx];
+           console.log(book);
+            book.$save();
+            $scope.list(idx);
+        };
+        //删除一条任务
+        $scope.remove=function(idx){
+            var r = confirm("delete this?");
+            if(r==true){
+                $scope.books[idx].$delete();
+               // $scope.books[idx].$delete();
+            $scope.list();
+            }
+        };
+
+    }]);
+</script>
+</body>
+</html>
